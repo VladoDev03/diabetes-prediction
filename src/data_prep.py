@@ -1,8 +1,27 @@
 import os
 import zipfile
+import re
 
-def test():
-    print("Test function in data_prep.py is working correctly.")
+def to_snake_case(col_name):
+    col_name = col_name.strip()
+
+    # insert underscore between a lowercase/digit and a following uppercase letter
+    col_name = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", col_name)
+
+    # insert underscore between consecutive uppercase letters followed by a lowercase letter (splits acronym+word boundaries
+    col_name = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", col_name)
+
+    # insert underscore between a letter and a following digit, and vice versa
+    col_name = re.sub(r"([a-zA-Z])([0-9])", r"\1_\2", col_name)
+    col_name = re.sub(r"([0-9])([a-zA-Z])", r"\1_\2", col_name)
+
+    col_name = col_name.lower()
+    col_name = re.sub(r"[^\w\s]", "_", col_name)  # replace non-alphanumeric characters with underscores
+    col_name = re.sub(r"\s+", "_", col_name)      # regex is used instead of replace to handle multiple spaces
+    col_name = re.sub(r"_+", "_", col_name)       # replace multiple underscores with a single underscore
+    col_name = col_name.rstrip("_")
+
+    return col_name
 
 
 def unzip_csv(zip_file_path, extract_to_folder):
