@@ -2,6 +2,13 @@ import os
 import zipfile
 import re
 
+import pandas as pd
+
+from scipy.stats import mannwhitneyu
+from scipy.spatial.distance import euclidean
+from sklearn.preprocessing import StandardScaler
+
+
 def to_snake_case(col_name):
     col_name = col_name.strip()
 
@@ -53,9 +60,9 @@ def find_duplicates(df, subset=None):
         "unique_duplicate_groups": n_groups
     }
 
-    print(f"Rows involved in duplication: {summary["rows_involved_in_duplication"]}")
-    print(f"Duplicate rows to remove: {summary["duplicate_rows_to_remove"]} "f"({summary["percent_duplicated"]}%)")
-    print(f"Unique duplicate groups: {summary["unique_duplicate_groups"]}")
+    print(f"Rows involved in duplication: {summary['rows_involved_in_duplication']}")
+    print(f"Duplicate rows to remove: {summary['duplicate_rows_to_remove']} "f"({summary['percent_duplicated']}%)")
+    print(f"Unique duplicate groups: {summary['unique_duplicate_groups']}")
 
     return duplicate_rows, summary, group_cols
 
@@ -70,3 +77,48 @@ def remove_duplicates(df):
     print(f"Removed: {rows_before - rows_after}")
 
     return df_clean
+
+
+def compare_groups_mannwhitney(df, group_col, features, group_a, group_b):
+    """
+    Runs a Mann-Whitney U test comparing two groups across multiple features,
+    including a rank-biserial effect size (more informative than the raw
+    p-value alone at large sample sizes, where nearly any difference
+    becomes "statistically significant").
+    """
+    results = []
+
+    for feature in features:
+        a = df[df[group_col] == group_a][feature]
+        b = df[df[group_col] == group_b][feature]
+
+        stat, p_value = mannwhitneyu(a, b)
+        effect_size = 1 - (2 * stat) / (len(a) * len(b))
+
+        results.append({
+            "feature": feature,
+            "p_value": p_value,
+            "effect_size": round(effect_size, 3)
+        })
+
+    return pd.DataFrame(results)
+
+
+def compare_group_centroids(df, group_col, features, group_a, group_b, scaler=None):
+    """
+    Computes the Euclidean distance between the centroids (mean feature
+    vectors) of two groups, using standardized features so that columns
+    on different scales contribute comparably to the distance.
+    """
+    if scaler is None:
+        scaler = StandardScaler()
+        X_scaled = scaler.fit_transform(df[features])
+    else:
+        X_scaled = scaler.transform(df[features])
+
+    X_scaled_df = pd.DataFrame(X_scaled, columns=features, index=df.index)
+
+    centroid_a = X_scaled_df[df[group_col] == group_a].mean()
+    centroid_b = X_scaled_df[df[group_col] == group_b].mean()
+
+    return euclidean(centroid_a, centroid_b)
