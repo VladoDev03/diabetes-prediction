@@ -49,12 +49,21 @@ def plot_numeric_distribution(df, column):
     print(df[column].describe())
 
 
-def plot_correlation_heatmap(df, columns, title="Correlation Heatmap"):
-    corr_matrix = df[columns].corr(method="spearman")
+def plot_correlation_heatmap(df, title, columns=None, figsize=(14, 10)):
+    plt.figure(figsize=figsize)
 
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", center=0)
+    if columns is None:
+        columns = df.select_dtypes(include="number").columns
+
+    sns.heatmap(
+        df[columns].corr(method="spearman"),
+        annot=True,
+        fmt=".2f",
+        cmap="coolwarm",
+        center=0
+    )
+
     plt.title(title)
     plt.tight_layout()
-
+    
     plt.show()
