@@ -1,5 +1,34 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
+
+
+def check_float_binary_columns(df, binary=True, continuous=True):
+    """ 
+    Identifies float64 columns that contain only binary values (0.0 and 1.0)
+    or continuous/other numerical data, based on the provided flags.
+    """
+    if not binary and not continuous:
+        raise ValueError("At least one of 'binary' or 'continuous' must be set to True.")
+    
+    float64_cols = df.select_dtypes(include=['float64']).columns
+    
+    binary_cols = []
+    other_cols = []
+    
+    for col in float64_cols:
+        unique_vals = set(df[col].dropna().unique())
+        
+        # Determine if the column is binary
+        is_binary = unique_vals.issubset({0.0, 1.0})
+        
+        # Append to respective lists only if the corresponding flag is True
+        if is_binary and binary:
+            binary_cols.append(col)
+        elif not is_binary and continuous:
+            other_cols.append(col)
+    
+    return binary_cols, other_cols
 
 
 def plot_categorical_distribution(df, column, by_target=None, decimals=2):
