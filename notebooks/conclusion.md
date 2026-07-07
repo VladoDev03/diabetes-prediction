@@ -41,4 +41,4 @@ Overfitting checks (train vs. test ROC-AUC gap) were small across all models in 
 
 ## Future Work
 
-Possible extensions include: adding `_RACE` and other omitted risk factors to the `BRFSS` feature set; training an `iammustafatz` model restricted to lifestyle/demographic features only (excluding HbA1c/glucose) to obtain a more realistic early-screening estimate, isolated from the diagnostic circularity discussed above;
+Possible extensions include: adding `_RACE` and other omitted risk factors to the `BRFSS` feature set; training an `iammustafatz` model restricted to lifestyle/demographic features only (excluding HbA1c/glucose) to obtain a more realistic early-screening estimate, isolated from the diagnostic circularity discussed above.
