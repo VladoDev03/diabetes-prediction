@@ -26,12 +26,14 @@ def evaluate_classification_model(y_true, y_pred, y_pred_proba, model_name="Mode
 
     cm = confusion_matrix(y_true, y_pred)
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=axes[0])
+    
     axes[0].set_title(f"{model_name} - Confusion Matrix")
     axes[0].set_xlabel("Predicted")
     axes[0].set_ylabel("Actual")
 
     fpr, tpr, _ = roc_curve(y_true, y_pred_proba)
     roc_auc = auc(fpr, tpr)
+
     axes[1].plot(fpr, tpr, label=f"AUC = {roc_auc:.4f}")
     axes[1].plot([0, 1], [0, 1], linestyle="--", color="gray")
     axes[1].set_title(f"{model_name} - ROC Curve")
